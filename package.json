@@ -1,8 +1,8 @@
 {
   "name": "unexpected-htmllike-preactrendered-adapter",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Adapter for unexpected-htmllike for preact rendered components",
-  "main": "index.js",
+  "main": "lib/PreactRenderedAdapter.js",
   "scripts": {
     "test": "mocha --compilers js:babel-register src/tests",
     "build": "babel src -d lib --source-maps true",

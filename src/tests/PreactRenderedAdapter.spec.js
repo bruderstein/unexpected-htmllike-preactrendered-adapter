@@ -1,9 +1,11 @@
 const EmulateDom = require('./helpers/emulateDom');
 import preact, { h } from 'preact';
-import PreactRenderedAdapter, { wrapRootNode } from '../PreactRenderedAdapter';
+import PreactRenderedAdapter from '../PreactRenderedAdapter';
 import unexpected from 'unexpected';
 
 const expect = unexpected.clone();
+
+const wrapRootNode = PreactRenderedAdapter.wrapRootNode;
 
 function StatelessComponent(props) {
   return <span>stateless</span>;
@@ -132,18 +134,26 @@ describe('PreactRenderedAdapter', function () {
       ]);
     });
 
+    it('returns empty children when a node has no content', function () {
+
+      const RenderEmptyDiv = () => <div>{null}</div>;
+      const component = wrapRootNode(render(<RenderEmptyDiv />));
+      expect(adapter.getChildren(component), 'to equal', []);
+    });
+
   });
 
   describe('getAttributes', function () {
 
     it('returns simple props from an class component', function () {
       const component = wrapRootNode(render(<RenderES6 className="passed-through"/>));
-      expect(adapter.getAttributes(component), 'to equal', { className: 'passed-through' })
+      expect(adapter.getAttributes(component), 'to equal', { class: 'passed-through' })
     });
 
     it('returns simple props from an HTML element', function () {
       const component = wrapRootNode(render(<ES6Comp className="passed-through" data-foo="bar"/>));
-      expect(adapter.getAttributes(component), 'to equal', { 'class': 'passed-through', 'data-foo': 'bar' })
+      expect(adapter.getAttributes(component), 'to equal', { class: 'passed-through', 'data-foo': 'bar' })
     });
+    // TODO: specific tests for class / className normalization
   });
 });

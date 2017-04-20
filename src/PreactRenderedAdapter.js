@@ -64,6 +64,11 @@ class PreactRenderedAdapter {
     if (wrapped.type === COMPONENT_TYPE) {
       const props = Object.assign({}, wrapped.component.props);
       delete props.children;
+      // Normalise `className` to `class`
+      if (typeof props.className === 'string' && props.class === undefined) {
+        props.class = props.className;
+        delete props.className;
+      }
       return props;
     }
 
@@ -74,7 +79,6 @@ class PreactRenderedAdapter {
       }, {});
 
     // TODO: ref & key
-    return (element._component && element._component.props) || element.__preact_attr_ || {};
   }
 
   getChildren(wrapped) {
@@ -96,11 +100,11 @@ class PreactRenderedAdapter {
       const element = wrapped.node;
       return ((element && element.childNodes && Array.prototype.slice.call(element.childNodes)) || []).map(item => {
         if (item.nodeType === 3) {
-          return item.textContent;
+          return item.textContent ? item.textContent : null;
         }
 
         return wrapNode(item);
-      });
+      }).filter(node => node !== null);
 
     }
 
@@ -119,9 +123,12 @@ class PreactRenderedAdapter {
 }
 
 
-PreactRenderedAdapter.prototype.classAttributeName = 'className';
+PreactRenderedAdapter.prototype.classAttributeName = 'class';
 
-export function wrapRootNode(node) {
+PreactRenderedAdapter.COMPONENT_TYPE = COMPONENT_TYPE;
+PreactRenderedAdapter.NODE_TYPE = NODE_TYPE;
+
+PreactRenderedAdapter.wrapRootNode = function wrapRootNode(node) {
   // If the root node rendered a custom component as it's top level node, then wrap that child
   if (node._component && node._component._component) {
     return { type: COMPONENT_TYPE, component: node._component._component, node };
@@ -129,7 +136,7 @@ export function wrapRootNode(node) {
 
   // otherwise wrap the node itself
   return { type: NODE_TYPE, node };
-}
+};
 
 function wrapNode(node) {
   if (node._component) {
@@ -139,5 +146,6 @@ function wrapNode(node) {
   return { type: NODE_TYPE, node };
 }
 
+PreactRenderedAdapter.wrapNode = wrapNode;
 
-export default PreactRenderedAdapter;
+module.exports = PreactRenderedAdapter;
