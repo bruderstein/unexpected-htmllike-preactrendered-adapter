@@ -50,6 +50,24 @@ class DeepComponent extends preact.Component {
   }
 }
 
+class WithEvents extends preact.Component {
+  constructor() {
+    super();
+    this.state = { count: 0 };
+    this.onClick = this.onClick.bind(this);
+  }
+
+  onClick() {
+    this.setState({
+      count: this.state.count + 1
+    });
+  }
+
+  render() {
+    return <button onClick={this.onClick}>Click {this.state.count}</button>;
+  }
+}
+
 function render(element) {
   const container = document.createElement('div');
   return preact.render(element, container);
@@ -154,6 +172,90 @@ describe('PreactRenderedAdapter', function () {
       const component = wrapRootNode(render(<ES6Comp className="passed-through" data-foo="bar"/>));
       expect(adapter.getAttributes(component), 'to equal', { class: 'passed-through', 'data-foo': 'bar' })
     });
-    // TODO: specific tests for class / className normalization
+
+    it('returns an event handler', function () {
+      const component = wrapRootNode(render(<WithEvents />));
+      expect(adapter.getAttributes(component), 'to satisfy', {
+        onClick: expect.it('to be a function')
+      });
+    });
+
+    it('gets attributes for a deep nested result', function () {
+      const Deep = () => <div data-foo="bar"><span data-deep="baz">Hi</span></div>;
+      const component = wrapRootNode(render(<Deep />));
+      expect(adapter.getAttributes(adapter.getChildren(component)[0]), 'to satisfy', {
+        'data-deep': 'baz'
+      });
+    });
+
+    it('normalizes className to class for a custom component', function () {
+      const ClassTest = (props) => <ES6Comp className={props.className} />;
+      const component = wrapRootNode(render(<ClassTest className="foo" />));
+      expect(adapter.getAttributes(component), 'to satisfy', {
+        class: 'foo'
+      });
+    });
+
+    it('normalizes className to class for an HTML element', function () {
+      const ClassTest = (props) => <div className={props.className} />;
+      const component = wrapRootNode(render(<ClassTest className="foo" />));
+      expect(adapter.getAttributes(component), 'to satisfy', {
+        class: 'foo'
+      });
+    });
+
+    it('with standard options does not return the key on an HTML node', function () {
+      const KeyTest = (props) => <div key={42} class="one two"/>;
+      const component = wrapRootNode(render(<KeyTest />));
+      expect(adapter.getAttributes(component), 'to equal', { class: 'one two' })
+    });
+
+    it('with includeKeyProp returns the key on an HTML node', function () {
+      const KeyTest = (props) => <div key={42} class="one two"/>;
+      const component = wrapRootNode(render(<KeyTest />));
+      adapter.setOptions({ includeKeyProp: true });
+      expect(adapter.getAttributes(component), 'to equal', { key: 42, class: 'one two' })
+    });
+
+    it('with standard options does not return the key on a custom node', function () {
+      const KeyTest = (props) => <RenderES6 key={42} class="one two"/>;
+      const component = wrapRootNode(render(<KeyTest />));
+      expect(adapter.getAttributes(component), 'to equal', { class: 'one two' })
+    });
+
+    it('with includeKeyProp returns the key on a custom node', function () {
+      const KeyTest = (props) => <RenderES6 key={42} class="one two"/>;
+      const component = wrapRootNode(render(<KeyTest />));
+      adapter.setOptions({ includeKeyProp: true });
+      expect(adapter.getAttributes(component), 'to equal', { key: 42, class: 'one two' })
+    });
+
+    it('with standard options does not return the ref on an HTML node', function () {
+      const RefTest = (props) => <div ref={() => {}} class="one two"/>;
+      const component = wrapRootNode(render(<RefTest />));
+      expect(adapter.getAttributes(component), 'to equal', { class: 'one two' })
+    });
+
+    it('with includeRefProp returns the ref on an HTML node', function () {
+      const refFn = () => {};
+      const RefTest = (props) => <div ref={refFn} class="one two"/>;
+      const component = wrapRootNode(render(<RefTest />));
+      adapter.setOptions({ includeRefProp: true });
+      expect(adapter.getAttributes(component), 'to equal', { ref: refFn, class: 'one two' })
+    });
+
+    it('with standard options does not return the ref on a custom node', function () {
+      const RefTest = (props) => <RenderES6 ref={() => {}} class="one two"/>;
+      const component = wrapRootNode(render(<RefTest />));
+      expect(adapter.getAttributes(component), 'to equal', { class: 'one two' })
+    });
+
+    it('with includeRefProp returns the ref on a custom node', function () {
+      const refFn = () => {};
+      const RefTest = (props) => <RenderES6 ref={refFn} class="one two"/>;
+      const component = wrapRootNode(render(<RefTest />));
+      adapter.setOptions({ includeRefProp: true });
+      expect(adapter.getAttributes(component), 'to equal', { ref: refFn, class: 'one two' })
+    });
   });
 });

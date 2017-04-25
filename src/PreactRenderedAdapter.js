@@ -34,7 +34,9 @@ function wrapFunctionalComponent(vnode) {
 }
 
 
-const DefaultOptions = {};
+const DefaultOptions = {
+  includeKeyProp: false
+};
 
 export const NODE_TYPE = typeof Symbol === 'function' ? Symbol('PreactDOMNode') : '__$$preact_dom_node 4$hnLx';
 export const COMPONENT_TYPE = typeof Symbol === 'function' ? Symbol('PreactComponentInstance') : '__$$preact_component_instance 4$hnLx';
@@ -43,6 +45,8 @@ const elementGetNameFunctions = {
   [NODE_TYPE]: (element) => (element.node.tagName && element.node.tagName.toLowerCase()) || 'no-display-name',
   [COMPONENT_TYPE]: (element) => element.component.constructor.displayName || element.component.constructor.name
 };
+
+const symbolAttr = typeof Symbol === 'function' && Symbol('preactattr');
 
 class PreactRenderedAdapter {
 
@@ -69,16 +73,40 @@ class PreactRenderedAdapter {
         props.class = props.className;
         delete props.className;
       }
+
+      if (!this._options.includeKeyProp) {
+        delete props.key;
+      } else if (wrapped.component.__key || wrapped.component.__k) {
+        props.key = wrapped.component.__key || wrapped.component.__k;
+      }
+
+      if (!this._options.includeRefProp) {
+        delete props.ref;
+      } else if (wrapped.component.__ref || wrapped.component.__r) {
+        props.ref = wrapped.component.ref || wrapped.component.__r;
+      }
+
       return props;
     }
+    const providedProps = wrapped.node.__preactattr_ || (symbolAttr && wrapped.node[symbolAttr]);
 
-    return Array.prototype.map.call(wrapped.node.attributes, (attr) => ({ name: attr.name, value: attr.value }))
-      .reduce((attrs, item) => {
-        attrs[item.name] = item.value;
-        return attrs;
-      }, {});
+    if (providedProps) {
+      const resultProps = Object.assign({}, providedProps);
+      if (typeof resultProps.className === 'string' && resultProps.class === undefined) {
+        resultProps.class = resultProps.className;
+        delete resultProps.className;
+      }
+      if (!this._options.includeKeyProp) {
+        delete resultProps.key;
+      }
 
-    // TODO: ref & key
+      if (!this._options.includeRefProp) {
+        delete resultProps.ref;
+      }
+      return resultProps;
+    }
+
+    throw new Error('Non-wrapped or non-preact element passed to preactRenderedAdapter.getAttributes()');
   }
 
   getChildren(wrapped) {
@@ -108,8 +136,7 @@ class PreactRenderedAdapter {
 
     }
 
-    // TODO: cleanup
-    return { x: 'UNEXPECTED NODE TYPE PASSED TO GETCHILDREN', type: wrapped.type, wrapped }
+    throw new Error('getChildren() called on non-wrapped Preact rendered node (probably an error in unexpected-preact');
   }
 
   setOptions(newOptions) {
