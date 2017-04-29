@@ -156,6 +156,11 @@ PreactRenderedAdapter.COMPONENT_TYPE = COMPONENT_TYPE;
 PreactRenderedAdapter.NODE_TYPE = NODE_TYPE;
 
 PreactRenderedAdapter.wrapRootNode = function wrapRootNode(node) {
+  // Detect a preact-compat render, which returns an instance of a component, we need the base DOM component as per normal preact
+  if (node.base && node.hasOwnProperty('props') && node.hasOwnProperty('context') && typeof node.setState === 'function') {
+    return wrapRootNode(node.base)
+  }
+
   // If the root node rendered a custom component as it's top level node, then wrap that child
   if (node._component && node._component._component) {
     return { type: COMPONENT_TYPE, component: node._component._component, node };
