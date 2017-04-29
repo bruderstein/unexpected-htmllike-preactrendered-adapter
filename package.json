@@ -1,6 +1,6 @@
 {
   "name": "unexpected-htmllike-preactrendered-adapter",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Adapter for unexpected-htmllike for preact rendered components",
   "main": "lib/PreactRenderedAdapter.js",
   "scripts": {
