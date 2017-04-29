@@ -47,7 +47,7 @@ const elementGetNameFunctions = {
   [COMPONENT_TYPE]: (element) => element.component.constructor.displayName || element.component.constructor.name
 };
 
-const symbolAttr = typeof Symbol === 'function' && Symbol('preactattr');
+const symbolAttr = typeof Symbol === 'function' && Symbol.for('preactattr');
 
 class PreactRenderedAdapter {
 
