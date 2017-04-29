@@ -16,8 +16,9 @@ function wrapFunctionalComponent(vnode) {
   const originalRender = vnode.nodeName;
   const name = vnode.nodeName.name || '(Function.name missing)';
   const wrappers = functionalComponentWrappers;
-  if (!wrappers.has(originalRender)) {
-    let wrapper = class extends preact.Component {
+  let wrapper = wrappers.get(originalRender);
+  if (!wrapper) {
+    wrapper = class extends preact.Component {
       render(props, state, context) {
         return originalRender(props, context);
       }
@@ -30,7 +31,7 @@ function wrapFunctionalComponent(vnode) {
 
     wrappers.set(originalRender, wrapper);
   }
-  vnode.nodeName = wrappers.get(originalRender);
+  vnode.nodeName = wrapper;
 }
 
 
