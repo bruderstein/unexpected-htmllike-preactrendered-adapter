@@ -84,7 +84,7 @@ class PreactRenderedAdapter {
       if (!this._options.includeRefProp) {
         delete props.ref;
       } else if (wrapped.component.__ref || wrapped.component.__r) {
-        props.ref = wrapped.component.ref || wrapped.component.__r;
+        props.ref = wrapped.component.__ref || wrapped.component.__r;
       }
 
       return props;
