@@ -69,7 +69,7 @@ class PreactRenderedAdapter {
       const props = Object.assign({}, wrapped.component.props);
       delete props.children;
       // Normalise `className` to `class`
-      if (typeof props.className === 'string' && props.class === undefined) {
+      if (typeof props.className === 'string') {
         props.class = props.className;
         delete props.className;
       }
@@ -92,10 +92,11 @@ class PreactRenderedAdapter {
 
     if (providedProps) {
       const resultProps = Object.assign({}, providedProps);
-      if (typeof resultProps.className === 'string' && resultProps.class === undefined) {
+      if (typeof resultProps.className === 'string') {
         resultProps.class = resultProps.className;
         delete resultProps.className;
       }
+
       if (!this._options.includeKeyProp) {
         delete resultProps.key;
       }
