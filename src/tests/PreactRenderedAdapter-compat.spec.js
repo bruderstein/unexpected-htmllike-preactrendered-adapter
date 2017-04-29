@@ -7,6 +7,7 @@ const expect = unexpected.clone();
 
 const h = React.createElement;
 const wrapRootNode = PreactRenderedAdapter.wrapRootNode;
+const wrapNode = PreactRenderedAdapter.wrapNode;
 
 function StatelessComponent(props) {
   return <span>stateless</span>;
@@ -101,6 +102,21 @@ describe('PreactRenderedAdapter', function () {
     it('returns the name of a stateless component', function () {
       const component = wrapRootNode(render(<RenderStateless2 />));
       expect(adapter.getName(component), 'to equal', 'StatelessComponent');
+    });
+
+    it('returns the name of a rendered class node when using wrapNode', function () {
+        const component = wrapNode(render(<RenderES6 />));
+        expect(adapter.getName(component), 'to equal', 'RenderES6');
+    });
+
+    it('returns the name of a rendered stateless node when using wrapNode', function () {
+      const component = wrapNode(render(<RenderStateless />));
+      expect(adapter.getName(component), 'to equal', 'RenderStateless');
+    });
+
+    it('returns the name of a rendered HTML element when using wrapNode', function () {
+      const component = wrapNode(render(<div />));
+      expect(adapter.getName(component), 'to equal', 'div');
     });
   });
 

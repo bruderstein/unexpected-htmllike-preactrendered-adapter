@@ -173,6 +173,10 @@ PreactRenderedAdapter.wrapRootNode = function wrapRootNode(node) {
 };
 
 function wrapNode(node) {
+  if (node.base && node.hasOwnProperty('props') && node.hasOwnProperty('context') && typeof node.setState === 'function') {
+    return wrapNode(node.base)
+  }
+
   if (node._component) {
     return { type: COMPONENT_TYPE, component: node._component, node };
   }
