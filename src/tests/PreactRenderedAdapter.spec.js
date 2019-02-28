@@ -55,6 +55,17 @@ function runTests(groupName, { h, Component, preactRender }) {
     }
   }
 
+  class DangesrouslySetHtml extends Component {
+    render() {
+      return (
+        <div className="set-inner" dangerouslySetInnerHTML={{
+          __html: 'Here is a <a class="inner" href="/foo">link</a>'
+        }}>
+        </div>
+      );
+    }
+  }
+
   class WithEvents extends Component {
     constructor() {
       super();
@@ -181,6 +192,10 @@ function runTests(groupName, { h, Component, preactRender }) {
         expect(adapter.getChildren(component), 'to equal', []);
       });
 
+      it('returns children from a node set with dangerouslySetInnerHTML', function () {
+        const component = wrapRootNode(render(<DangesrouslySetHtml />));
+        expect(adapter.getChildren(component), 'to satisfy', [ 'Here is a ', expect.it('to have name', 'a')])
+      });
     });
 
     describe('getAttributes', function () {
@@ -208,6 +223,16 @@ function runTests(groupName, { h, Component, preactRender }) {
         expect(adapter.getAttributes(adapter.getChildren(component)[0]), 'to satisfy', {
           'data-deep': 'baz'
         });
+      });
+
+      it('gets attributes for a node created with dangerouslySetInnerHTML', function () {
+        const component = wrapRootNode(render(<DangesrouslySetHtml />));
+        const child = adapter.getChildren(component);
+        expect(adapter.getAttributes(child[1]), 'to satisfy', {
+          'class': 'inner',
+          href: '/foo'
+        });
+
       });
 
       it('normalizes className to class for a custom component', function () {
@@ -283,6 +308,7 @@ function runTests(groupName, { h, Component, preactRender }) {
         adapter.setOptions({ includeRefProp: true });
         expect(adapter.getAttributes(component), 'to equal', { ref: refFn, class: 'one two' })
       });
+
     });
   });
 }

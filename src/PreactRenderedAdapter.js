@@ -89,7 +89,13 @@ class PreactRenderedAdapter {
 
       return props;
     }
-    const providedProps = wrapped.node.__preactattr_ || (symbolAttr && wrapped.node[symbolAttr]);
+    let providedProps = wrapped.node.__preactattr_ || (symbolAttr && wrapped.node[symbolAttr]);
+    if (!providedProps && wrapped.node.nodeType === 1) {
+      providedProps = wrapped.node.getAttributeNames().reduce((props, attr) => {
+        props[attr] = wrapped.node.getAttribute(attr);
+        return props;
+      }, {});
+    }
 
     if (providedProps) {
       const resultProps = Object.assign({}, providedProps);
